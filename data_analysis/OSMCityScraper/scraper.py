@@ -3,39 +3,30 @@ import sys
 import argparse
 import sqlite3
 
-def run(args):
-    print("Welcome!")
+def scrape(dbcon, bounding_box):
+    print("Initializing data scraping from OSM...")
 
-    dbcon = None
-
-    if args.sqlite_db is not None:
-        print(f'Connecting to database at {args.sqlite_db}...')
-        dbcon = connect_database(args.sqlite_db)
-        print("Preparing database schema...")
-        check_and_migrate_schema(dbcon)
+    print("Preparing database schema...")
+    check_and_migrate_schema(dbcon)
 
     print("Connection to OSM API...")
     api = OsmApi()
 
-    print(f'Fetching data for coordinates {args.bounding_box}.')
-    city_data = api.Map(*args.bounding_box)
+    print(f'Fetching data for coordinates {bounding_box}.')
+    city_data = api.Map(*bounding_box)
     print(f'OSM gave us {len(city_data)} entries.')
 
     print("Extracting node data...")
     node_data = analyze_data(city_data)
     print(f'Found {len(node_data)} relevant nodes in extract.')
 
-    if dbcon is not None:
-        print("Writing obtained data to database...")
-        write_data_to_db(dbcon, node_data)
+    print("Writing obtained data to database...")
+    write_data_to_db(dbcon, node_data)
 
-        dbcon.commit()
-        dbcon.close()
+    dbcon.commit()
 
     print("DONE! :-)")
 
-def connect_database(url):
-    return sqlite3.connect(url)
 
 def check_and_migrate_schema(conn):
     # create fully if a table does not exist
@@ -143,15 +134,4 @@ def insert_shop(dbcon, elem):
     ntype = elem["tag"].get("shop")
     nid = elem["id"]
     dbcon.execute('insert into SHOPS (NODE_ID, TYPE) VALUES (?, ?)', (nid, ntype))
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Parse OSM arguments.')
-    parser.add_argument('bounding_box', type=float, nargs=4,
-            help='four reals specifying a bounding box to download the data. See http://boundingbox.klokantech.com/. ')
-    parser.add_argument('--sqlite-db', type=str,
-            help='Path to SQLite Database to hold the data. Creates the database if not existing and writes into the database if specified.')
-
-
-    args = parser.parse_args()
-    run(args)
 
