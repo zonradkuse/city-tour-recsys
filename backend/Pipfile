@@ -1,0 +1,25 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+
+[packages]
+certifi = "==2018.10.15"
+chardet = "==3.0.4"
+idna = "==2.7"
+osmapi = "==1.1.0"
+requests = "==2.19.1"
+"urllib3" = "==1.23"
+flask = "*"
+flask-sqlalchemy = "*"
+"psycopg2" = "*"
+flask-migrate = "*"
+flask-script = "*"
+marshmallow = "*"
+flask-bcrypt = "*"
+pyjwt = "*"
+
+[requires]
+python_version = "3.6"
