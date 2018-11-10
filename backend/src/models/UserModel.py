@@ -2,6 +2,7 @@
 
 from marshmallow import fields, Schema
 from . import db
+from .ReviewModel import ReviewSchema
 
 class UserModel(db.Model):
     """
@@ -13,7 +14,7 @@ class UserModel(db.Model):
 
     id=db.Column(db.Integer,primary_key=True)
     name=db.Column(db.String(128), nullable=False)
-    email=db.Column(db.String(128),unique=true,nullable=False)
+    email=db.Column(db.String(128),unique=True,nullable=False)
     password=db.Column(db.String(255),nullable=False)
     reviews=db.relationship('ReviewModel',backref='users',lazy=True)
 

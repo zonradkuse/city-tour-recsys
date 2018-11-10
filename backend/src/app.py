@@ -3,6 +3,8 @@
 from flask import Flask
 
 from .config import app_config
+from .models import db, bcrypt
+from .models import UserModel, ReviewModel
 
 def create_app(env_name):
   """
@@ -18,7 +20,7 @@ def create_app(env_name):
   bcrypt.init_app(app)
 
   db.init_app(app)
-  
+
   @app.route('/', methods=['GET'])
   def index():
     """

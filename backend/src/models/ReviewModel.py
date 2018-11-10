@@ -48,11 +48,11 @@ class ReviewModel(db.Model):
     def get_one_review(id):
         return ReviewModel.query.get(id)
 
-    class BlogpostSchema(Schema):
-        """
-        Review Schema
-        """
-        id = fields.Int(dump_only=True)
-        review_value=fields.Str(required=True)
-        content = fields.Str(required=True)
-        user_id = fields.Int(required=True)
+class ReviewSchema(Schema):
+    """
+    Review Schema
+    """
+    id = fields.Int(dump_only=True)
+    review_value=fields.Str(required=True)
+    content = fields.Str(required=True)
+    user_id = fields.Int(required=True)
