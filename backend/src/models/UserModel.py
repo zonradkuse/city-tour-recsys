@@ -15,7 +15,7 @@ class UserModel(db.Model):
     name=db.Column(db.String(128), nullable=False)
     email=db.Column(db.String(128),unique=true,nullable=False)
     password=db.Column(db.String(255),nullable=False)
-
+    reviews=db.relationship('ReviewModel',backref='users',lazy=True)
 
     # class constructor
     def __init__(self, data):
@@ -57,3 +57,14 @@ class UserModel(db.Model):
     @staticmethod
     def get_one_user(id):
         return UserModel.query.get(id)
+
+
+    class UserSchema(Schema):
+      """
+      User Schema
+      """
+      id = fields.Int(dump_only=True)
+      name = fields.Str(required=True)
+      email = fields.Email(required=True)
+      password = fields.Str(required=True)
+      reviews = fields.Nested(ReviewSchema, many=True)
