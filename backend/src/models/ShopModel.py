@@ -1,18 +1,17 @@
-# src models/TourismModel.py
+# src models/ShopModel.py
 
 from marshmallow import fields, Schema
 from . import db
 
-class TourismModel(db.Model):
+class ShopModel(db.Model):
     """
-    TourismModel
+    ShopModel
     """
 
     #table name
-    __tablename__='tourism'
+    __tablename__='shops'
 
     id=db.Column(db.Integer,primary_key=True)
-    description=db.Column(db.Text,nullable=True)
     type=db.Column(db.String(255),nullable=True)
 
     # class constructor
@@ -20,7 +19,6 @@ class TourismModel(db.Model):
         """
         Class constructor
         """
-        self.name = data.get('description')
         self.name = data.get('type')
 
     def save(self):
@@ -38,17 +36,16 @@ class TourismModel(db.Model):
         db.session.commit()
 
     @staticmethod
-    def get_all_tourism():
-        return TourismModel.query.all()
+    def get_all_shops():
+        return ShopModel.query.all()
 
     @staticmethod
-    def get_one_tourism(id):
-        return TourismModel.query.get(id)
+    def get_one_shop(id):
+        return ShopModel.query.get(id)
 
-class TourismSchema(Schema):
+class ShopSchema(Schema):
     """
-    Tourism Schema
+    Shop Schema
     """
     id = fields.Int(dump_only=True)
-    description=fields.Str(required=True)
     type=fields.Str(required=True)
