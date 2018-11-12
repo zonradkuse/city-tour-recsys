@@ -14,14 +14,16 @@ class TourismModel(db.Model):
     id=db.Column(db.Integer,primary_key=True)
     description=db.Column(db.Text,nullable=True)
     type=db.Column(db.String(255),nullable=True)
+    node_id=db.Column(db.Integer,db.ForeignKey('nodes.id'),nullable=False)
 
     # class constructor
     def __init__(self, data):
         """
         Class constructor
         """
-        self.name = data.get('description')
-        self.name = data.get('type')
+        self.description = data.get('description')
+        self.type = data.get('type')
+        self.node_id = data.get('node_id')
 
     def save(self):
         db.session.add(self)
@@ -52,3 +54,4 @@ class TourismSchema(Schema):
     id = fields.Int(dump_only=True)
     description=fields.Str(required=True)
     type=fields.Str(required=True)
+    node_id = fields.Int(required=True)

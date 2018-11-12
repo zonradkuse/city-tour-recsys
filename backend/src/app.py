@@ -4,7 +4,7 @@ from flask import Flask
 
 from .config import app_config
 from .models import db, bcrypt
-from .models import UserModel, ReviewModel
+from .models import UserModel, ReviewModel, NodeModel,AmenityModel,TourismModel,ShopModel
 
 def create_app(env_name):
   """

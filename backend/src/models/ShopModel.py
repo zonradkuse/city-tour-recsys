@@ -13,13 +13,15 @@ class ShopModel(db.Model):
 
     id=db.Column(db.Integer,primary_key=True)
     type=db.Column(db.String(255),nullable=True)
+    node_id=db.Column(db.Integer,db.ForeignKey('nodes.id'),nullable=False)
 
     # class constructor
     def __init__(self, data):
         """
         Class constructor
         """
-        self.name = data.get('type')
+        self.type = data.get('type')
+        self.node_id = data.get('node_id')
 
     def save(self):
         db.session.add(self)
@@ -49,3 +51,4 @@ class ShopSchema(Schema):
     """
     id = fields.Int(dump_only=True)
     type=fields.Str(required=True)
+    node_id = fields.Int(required=True)

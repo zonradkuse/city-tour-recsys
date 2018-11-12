@@ -2,6 +2,9 @@
 
 from marshmallow import fields, Schema
 from . import db
+from .AmenityModel import AmenitySchema
+from .ShopModel import ShopSchema
+from .TourismModel import TourismSchema
 
 class NodeModel(db.Model):
     """
@@ -15,11 +18,14 @@ class NodeModel(db.Model):
     name=db.Column(db.String(255),nullable=False)
     image_link=db.Column(db.Text,nullable=True)
     website=db.Column(db.Text,nullable=True)
-    lon=db.Column(db.Real,nullable=False)
-    lat=db.Column(db.Real,nullable=False)
+    lon=db.Column(db.Float,nullable=False)
+    lat=db.Column(db.Float,nullable=False)
     description=db.Column(db.Text,nullable=True)
     phone=db.Column(db.String(255),nullable=True)
     email=db.Column(db.String(500),nullable=True)
+    amenities=db.relationship('AmenityModel',backref='users',lazy=True)
+    tourism=db.relationship('TourismModel',backref='users',lazy=True)
+    shops=db.relationship('ShopswModel',backref='users',lazy=True)
 
     # class constructor
     def __init__(self, data):
@@ -65,8 +71,11 @@ class NodeSchema(Schema):
     name=fields.Str(required=True)
     image_link = fields.Str(required=True)
     website = fields.Str(required=True)
-    lon= fields.Real(required=True)
-    lat = fields.Str(required=True)
+    lon= fields.Float(required=True)
+    lat = fields.Float(required=True)
     description = fields.Str(required=True)
     phone = fields.Str(required=True)
     email = fields.Str(required=True)
+    amenities = fields.Nested(AmenitySchema, many=True)
+    tourism = fields.Nested(TourismSchema, many=True)
+    shops = fields.Nested(ShopSchema, many=True)
