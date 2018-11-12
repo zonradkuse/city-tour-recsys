@@ -2,7 +2,6 @@
 
 from marshmallow import fields, Schema
 from . import db
-from .ReviewModel import ReviewSchema
 
 class NodeModel(db.Model):
     """
