@@ -22,7 +22,28 @@ def dispatch(args):
     if args.user is not None:
         assert(args.city is not None)
 
-        recommender_core.recommend(args.user, args.city)
+        # we will need this to plot a city map, move this code later on to frontend
+
+        recommendations = recommender_core.recommend(args.user, args.city)
+        plot_recommendations(recommendations, args.city)
+
+
+def plot_recommendations(rcms, city):
+    import matplotlib.pyplot as plt
+    import osmnx as ox
+    ox.config(use_cache=True)
+    # first get a map of the city and afterwards plot the obtained data points on that map
+    city_graph = ox.graph_from_place(city, network_type = 'drive')
+
+    fig, ax = ox.plot_graph(city_graph, show = False, close = False)
+
+    for rcm in rcms:
+        # plot all the points we are still missing and pray that we can simply plot the coords
+        ax.scatter(rcm["LON"], rcm["LAT"], c='red')
+        ax.annotate(rcm["NAME"], (rcm["LON"], rcm["LAT"]))
+
+    ax.set_title(city)
+    plt.show()
 
 def connect_to_db(url):
     return sqlite3.connect(url)
