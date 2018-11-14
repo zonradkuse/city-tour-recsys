@@ -93,14 +93,17 @@ def write_data_to_db(dbcon, data, city):
     for elem in data:
         insert_node(dbcon, elem, city)
 
-        if "amenity" in elem["tag"]:
+        if "amenity" in elem["tag"] or ("tourism" in elem["tag"] and elem["tag"].get("tourism") == "hotel"):
             insert_amenity(dbcon, elem)
 
-        if "tourism" in elem["tag"]:
+        if "tourism" in elem["tag"] and elem["tag"].get("tourism") != "hotel":
             insert_tourism(dbcon, elem)
 
         if "shop" in elem["tag"]:
             insert_shop(dbcon, elem)
+
+        # insert_tags(dbcon, elem)
+
 
 def insert_node(con, elem, city):
     name = elem["tag"].get("name")
