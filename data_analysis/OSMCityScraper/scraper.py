@@ -3,7 +3,7 @@ import sys
 import argparse
 import sqlite3
 
-def scrape(dbcon, bounding_box):
+def scrape(dbcon, bounding_box, city):
     print("Initializing data scraping from OSM...")
 
     print("Preparing database schema...")
@@ -21,7 +21,7 @@ def scrape(dbcon, bounding_box):
     print(f'Found {len(node_data)} relevant nodes in extract.')
 
     print("Writing obtained data to database...")
-    write_data_to_db(dbcon, node_data)
+    write_data_to_db(dbcon, node_data, city)
 
     dbcon.commit()
 
@@ -41,7 +41,8 @@ def check_and_migrate_schema(conn):
       DESCRIPTION text,
       PHONE text,
       EMAIL text,
-      NAME text
+      NAME text,
+      CITY text
     )
     ''')
 
@@ -88,9 +89,9 @@ def analyze_data(data):
 
     return relevant_nodes
 
-def write_data_to_db(dbcon, data):
+def write_data_to_db(dbcon, data, city):
     for elem in data:
-        insert_node(dbcon, elem)
+        insert_node(dbcon, elem, city)
 
         if "amenity" in elem["tag"]:
             insert_amenity(dbcon, elem)
@@ -101,7 +102,7 @@ def write_data_to_db(dbcon, data):
         if "shop" in elem["tag"]:
             insert_shop(dbcon, elem)
 
-def insert_node(con, elem):
+def insert_node(con, elem, city):
     name = elem["tag"].get("name")
     nid = elem.get("id")
     image_link = elem["tag"].get("image_link")
@@ -113,9 +114,9 @@ def insert_node(con, elem):
     email = elem["tag"].get("email")
 
     con.execute('''
-    insert into NODES (NAME, NODE_ID, IMAGE_LINK, WEBSITE, LON, LAT, DESCRIPTION, PHONE, EMAIL)
-       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (name, nid, image_link, website, lon, lat, descr, phone, email))
+    insert into NODES (NAME, NODE_ID, IMAGE_LINK, WEBSITE, LON, LAT, DESCRIPTION, PHONE, EMAIL, CITY)
+       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (name, nid, image_link, website, lon, lat, descr, phone, email, city))
 
 def insert_amenity(dbcon, elem):
     ntype = elem["tag"].get("amenity")
