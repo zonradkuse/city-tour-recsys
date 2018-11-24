@@ -1,4 +1,5 @@
 from osmapi import OsmApi
+import osmnx
 import sys
 import argparse
 import sqlite3
@@ -74,6 +75,31 @@ def check_and_migrate_schema(conn):
       FOREIGN KEY(NODE_ID) REFERENCES NODES(NODE_ID)
     )
     ''')
+
+
+    # table just for storing many tags for one
+    conn.execute('''
+    create table if not exists TAGS
+    (
+      NODE_ID integer,
+      TAG text,
+      FOREIGN KEY(NODE_ID) REFERENCES NODES(NODE_ID),
+      PRIMARY KEY(NODE_ID, TAG)
+    )
+    ''')
+
+    # table for node quality measures like wikipedia word count, google search results, etc...
+    conn.execute('''
+    create table if not exists QUALITY_MEASURES
+    (
+      NODE_ID integer,
+      MEASURE_NAME text,
+      VALUE integer,
+      FOREIGN KEY(NODE_ID) REFERENCES NODES(NODE_ID),
+      PRIMARY KEY(NODE_ID)
+    )
+    ''')
+
 
     # if you ever change anything in the schema, check here whether your desired change
     # is already applied and if not apply the change without dropping data!!
