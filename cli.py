@@ -15,7 +15,7 @@ def dispatch(args):
     connection_provider.set(conn)
     user_management.initialize(conn)
 
-    if args.bounding_box is not None:
+    if args.bounding_box is not None or not has_city_data(args.city):
         print(f'Scraping data from OSM for box {args.bounding_box}')
         OSMScraper.scrape(conn, args.bounding_box, args.city)
 
@@ -27,6 +27,12 @@ def dispatch(args):
         recommendations = recommender_core.recommend(args.user, args.city)
         plot_recommendations(recommendations, args.city)
 
+def has_city_data(city):
+    conn = connection_provider.get_cursor()
+
+    conn.execute('select 1 from NODES where city = ?', (city,))
+
+    return len(conn.fetchall()) > 0
 
 def plot_recommendations(rcms, city):
     import matplotlib.pyplot as plt

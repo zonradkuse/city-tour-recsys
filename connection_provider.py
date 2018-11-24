@@ -9,3 +9,7 @@ def get():
     assert(conn is not None)
     return conn
 
+def get_cursor():
+    assert(conn is not None)
+    return conn.cursor()
+

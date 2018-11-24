@@ -13,9 +13,18 @@ def scrape(dbcon, bounding_box, city):
     print("Connection to OSM API...")
     api = OsmApi()
 
-    print(f'Fetching data for coordinates {bounding_box}.')
-    city_data = api.Map(*bounding_box)
-    print(f'OSM gave us {len(city_data)} entries.')
+    city_data = None
+
+    if bounding_box is not None:
+        print(f'Fetching data for coordinates {bounding_box} using OsmApi.')
+        city_data = api.Map(*bounding_box)
+        print(f'OSM gave us {len(city_data)} entries.')
+    elif city is not None:
+        print(f'Fetching data for {city} using osmnx.')
+        city_data = fetch_poi_osmnx(city)
+    else:
+        raise ValueError("Neither Bounding Box nor City specified!")
+
 
     print("Extracting node data...")
     node_data = analyze_data(city_data)
@@ -104,6 +113,32 @@ def check_and_migrate_schema(conn):
     # if you ever change anything in the schema, check here whether your desired change
     # is already applied and if not apply the change without dropping data!!
     # We don't want to mess around with manual db changes!
+
+def fetch_poi_osmnx(city):
+    data_frame = osmnx.pois_from_place(place=city)
+
+    # the dataframes are weird to handle and incompatible with what we are doing so far. Hence,
+    # we simply query OSMApi again to get the separate nodes for now.
+    data = []
+    api = OsmApi()
+    count = 0
+    while count < len(data_frame["osmid"]):
+        print(f'Loading item {count}/{len(data_frame["osmid"])} from OsmApi')
+        try:
+            api_data = api.NodesGet(data_frame["osmid"][count:count + 20]).values()
+            for item in api_data:
+                x = {}
+                x["data"] = item
+                x["type"] = "node"
+                data.append(x)
+
+        except Exception:
+            pass
+
+        count = count + 20
+
+    return data
+
 
 def analyze_data(data):
     relevant_nodes = []
