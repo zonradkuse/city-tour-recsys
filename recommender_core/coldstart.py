@@ -10,7 +10,7 @@ DEBUG = True
 def coldstart_recommendations(city):
     # We want to find a good coldstart without requiring any user data.
     # For this purpose we assume that interesting POIs are surrounded by
-    # restaurants, cafes and souvenir shops. Hence, we are looking for
+    # restaurants, cafes, souvenir shops, etc. Hence, we are looking for
     # clusters around the city. We use DBSCAN for this purpose.
 
     print(f'Creating coldstart recommendations for city {city}.')
