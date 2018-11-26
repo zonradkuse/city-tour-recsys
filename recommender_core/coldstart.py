@@ -1,4 +1,5 @@
 from recommender_core.Recommender import Recommender
+from recommender_core.Tour import TourSolver
 
 import numpy as np
 from sklearn.cluster import DBSCAN
@@ -55,7 +56,16 @@ class ColdStartRecommender(Recommender):
             print('-- Suggestions --')
             self.print_city_data(attractions)
 
-        return attractions
+        solver = TourSolver()
+        for atr in attractions:
+            solver.add_poi(atr)
+
+        tour = solver.solve()
+
+        if DEBUG:
+            print(tour)
+
+        return tour
 
     def query_city_data(self, city_name):
         # create sql query for this
