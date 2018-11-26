@@ -104,7 +104,7 @@ class TourSolver():
 
             self._solver.add(constr == var)
 
-        obj = 0
+        obj = IntVal(0)
         for pid, var in self._poi_variables.items():
             obj = obj + var
 
