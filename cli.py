@@ -24,8 +24,11 @@ def dispatch(args):
 
         # we will need this to plot a city map, move this code later on to frontend
 
-        recommendations = recommender_core.recommend(args.user, args.city)
-        plot_recommendations(recommendations, args.city)
+        tour = recommender_core.recommend(args.user, args.city)
+        print(tour.degree())
+
+        if args.render_map:
+            plot_tour(tour, args.city)
 
 def has_city_data(city):
     conn = connection_provider.get_cursor()
@@ -34,7 +37,7 @@ def has_city_data(city):
 
     return len(conn.fetchall()) > 0
 
-def plot_recommendations(rcms, city):
+def plot_tour(tour, city):
     import matplotlib.pyplot as plt
     import osmnx as ox
     ox.config(use_cache=True)
@@ -62,6 +65,7 @@ if __name__ == "__main__":
             help='Path to SQLite Database to hold the data. Creates the database if not existing and writes into the database if specified.')
     parser.add_argument('--user', type=str, help="Specify a user to give recommendations for.")
     parser.add_argument('--city', type=str, help="Specify a city to give recommendations for.")
+    parser.add_argument('--render-map', type=bool, help="Indicator whether to render a map or not.")
 
     args = parser.parse_args()
 
