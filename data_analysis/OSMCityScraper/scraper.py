@@ -117,6 +117,9 @@ def check_and_migrate_schema(conn):
 def fetch_poi_osmnx(city):
     data_frame = osmnx.pois_from_place(place=city)
 
+    if len(data_frame) == 0:
+        raise ValueError("Could not find data for the requested City on OSM.")
+
     # the dataframes are weird to handle and incompatible with what we are doing so far. Hence,
     # we simply query OSMApi again to get the separate nodes for now.
     data = []
