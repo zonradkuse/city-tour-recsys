@@ -2,6 +2,11 @@ import sys
 import argparse
 import sqlite3
 import networkx as nx
+import matplotlib.pyplot as plt
+import osmnx as ox
+from sklearn.neighbors import KDTree
+
+ox.config(use_cache=True)
 
 import user_management
 import recommender_core
@@ -43,25 +48,39 @@ def has_city_data(city):
         return False
 
 def plot_tour(tour, city):
-    import matplotlib.pyplot as plt
-    import osmnx as ox
-    from sklearn.neighbors import KDTree
-
-    ox.config(use_cache=True)
     # first get a map of the city and afterwards plot the obtained data points on that map
     city_graph = ox.graph_from_place(city, network_type = 'drive')
 
-    fig, ax = ox.plot_graph(city_graph, show = False, close = False)
+    closest_nodes = get_closest_nodes(city_graph, tour)
 
-    nodes, _ = ox.graph_to_gdfs(city_graph)
-    tree = KDTree(nodes[['y', 'x']], metric='euclidean')
+    paths = []
+    for e in tour.edges():
+        if closest_nodes[e[0]] not in city_graph.nodes() or closest_nodes[e[1]] not in city_graph.nodes():
+            continue
 
-    closest_nodes = {}
+        from_node = closest_nodes[e[0]]
+        to_node = closest_nodes[e[1]]
+        path = nx.shortest_path(city_graph, from_node, to_node)
+        paths.append(path)
+
+    fig, ax = ox.plot_graph_routes(city_graph, paths, route_color='blue', show=False, close=False)
+
     for rcm in tour.nodes():
         # plot the actual poi
         ax.scatter(rcm["LON"], rcm["LAT"], c='green')
         ax.annotate(rcm["NAME"], (rcm["LON"], rcm["LAT"]))
 
+    ax.set_title(city)
+
+    plt.show()
+
+def get_closest_nodes(city_graph, tour):
+    nodes, _ = ox.graph_to_gdfs(city_graph)
+    tree = KDTree(nodes[['y', 'x']], metric='euclidean')
+
+    # collect closest nodes
+    closest_nodes = {}
+    for rcm in tour.nodes():
         # get the closest node in the city graph
         closest_id = tree.query([(rcm["LAT"], rcm["LON"])], k=1, return_distance=False)[0]
         closest_osm_id = nodes.iloc[closest_id].index.values[0]
@@ -74,20 +93,8 @@ def plot_tour(tour, city):
         # save the closest node id for later access
         closest_nodes[rcm] = closest_osm_id
 
-    paths = []
-    for e in tour.edges():
-        if closest_nodes[e[0]] not in city_graph.nodes() or closest_nodes[e[1]] not in city_graph.nodes():
-            continue
+    return closest_nodes
 
-        from_node = closest_nodes[e[0]]
-        to_node = closest_nodes[e[1]]
-        path = nx.shortest_path(city_graph, from_node, to_node)
-        paths.append(path)
-
-    ox.plot_graph_routes(city_graph, paths, route_color='blue', show=False, close=False)
-
-    ax.set_title(city)
-    plt.show()
 
 def connect_to_db(url):
     return sqlite3.connect(url)

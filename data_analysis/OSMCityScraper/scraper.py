@@ -1,8 +1,17 @@
 from osmapi import OsmApi
+import osmapi
 import osmnx
-import sys
-import argparse
 import sqlite3
+from shapely.geometry import shape, box, LineString
+from shapely.ops import split
+import time
+
+DEBUG = True
+
+all_amenities = None
+#all_amenities = ['townhall']
+#all_amenities = ['restaurant', 'bar', 'pub', 'toilets', 'post_office', 'post_box', 'police', 'marketplace', 'embassy', 'fire_station', 'coworking_space', 'theatre', 'social_centre', 'planetarium', 'gambling', 'fountain', 'cinema', 'arts_centre', 'atm', 'bank', 'bicycle_parking', 'cafe', 'food_court', 'townhall']
+touristy_amenities = ['fountain', 'marketplace', 'townhall', 'theatre']
 
 def scrape(dbcon, bounding_box, city):
     print("Initializing data scraping from OSM...")
@@ -16,6 +25,7 @@ def scrape(dbcon, bounding_box, city):
     city_data = None
 
     if bounding_box is not None:
+        assert(false) # deprecated
         print(f'Fetching data for coordinates {bounding_box} using OsmApi.')
         city_data = api.Map(*bounding_box)
         print(f'OSM gave us {len(city_data)} entries.')
@@ -29,6 +39,8 @@ def scrape(dbcon, bounding_box, city):
     print("Extracting node data...")
     node_data = analyze_data(city_data)
     print(f'Found {len(node_data)} relevant nodes in extract.')
+
+    # construct_missing_coordinates(node_data)
 
     print("Writing obtained data to database...")
     write_data_to_db(dbcon, node_data, city)
@@ -115,33 +127,62 @@ def check_and_migrate_schema(conn):
     # We don't want to mess around with manual db changes!
 
 def fetch_poi_osmnx(city):
-    data_frame = osmnx.pois_from_place(place=city)
+    # get initial bounding box from osmnx nodes
+    result = osmnx.osm_polygon_download(city)
+    if len(result) > 1:
+        raise ValueError("Provided city is ambiguous!")
 
-    if len(data_frame) == 0:
-        raise ValueError("Could not find data for the requested City on OSM.")
+    if len(result) == 0:
+        raise ValueError("Could not find provided city!")
 
-    # the dataframes are weird to handle and incompatible with what we are doing so far. Hence,
-    # we simply query OSMApi again to get the separate nodes for now.
-    data = []
-    api = OsmApi()
-    count = 0
-    while count < len(data_frame["osmid"]):
-        print(f'Loading item {count}/{len(data_frame["osmid"])} from OsmApi')
-        try:
-            api_data = api.NodesGet(data_frame["osmid"][count:count + 20]).values()
-            for item in api_data:
-                x = {}
-                x["data"] = item
-                x["type"] = "node"
-                data.append(x)
+    search_result = result[0]
+    poly = shape(search_result['geojson'])
+    bounding_box = poly.bounds
 
-        except Exception:
-            pass
+    # download pois using osmapi since osmnx data is not completely/weirdly tagged. Some
+    # very important places miss lon/lat specifications. For this, use the bounding box of
+    # the obtained polytope and recursively download all data using OsmApi.
+    elems = recurse_osmapi(*bounding_box)
+    # rawdata = osmnx.osm_poi_download(poly, amenities=all_amenities)
 
-        count = count + 20
+    #return rawdata['elements']
+    print(elems)
+    return elems
 
-    return data
+def recurse_osmapi(minx, miny, maxx, maxy):
+    api = OsmApi() # TODO make globally available if too slow
 
+    if DEBUG:
+        print(f"recursing into {(minx, miny, maxx, maxy)}")
+
+    elems = []
+    try:
+        elems.extend(api.Map(minx, miny, maxx, maxy))
+    except osmapi.ApiError as er:
+        if er.status == 400:
+            # we requested too many elements - split box in half and process separately
+            splitter_x = LineString([((minx + maxx)/2, miny), ((minx + maxx)/2, maxy)])
+            bounding_box = box(minx, miny, maxx, maxy)
+            boxes_split_x = split(bounding_box, splitter_x)
+
+            splitter_y = LineString([(minx, (miny + maxy)/2), (maxx, (miny + maxy)/2)])
+
+            boxes = []
+            for b in boxes_split_x:
+                boxes.extend(split(b, splitter_y))
+
+            for b in boxes:
+                elems.extend(recurse_osmapi(*b.bounds))
+
+        elif er.status == 509:
+            # we shall wait and try again
+            print("Waiting 30s because of API response...")
+            time.sleep(30)
+            recurse_osmapi(minx, miny, maxx, maxy)
+        else:
+            raise er
+
+    return elems
 
 def analyze_data(data):
     relevant_nodes = []
@@ -181,7 +222,7 @@ def insert_node(con, elem, city):
     email = elem["tag"].get("email")
 
     con.execute('''
-    insert into NODES (NAME, NODE_ID, IMAGE_LINK, WEBSITE, LON, LAT, DESCRIPTION, PHONE, EMAIL, CITY)
+    insert OR IGNORE into NODES (NAME, NODE_ID, IMAGE_LINK, WEBSITE, LON, LAT, DESCRIPTION, PHONE, EMAIL, CITY)
        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (name, nid, image_link, website, lon, lat, descr, phone, email, city))
 
@@ -189,17 +230,54 @@ def insert_amenity(dbcon, elem):
     ntype = elem["tag"].get("amenity")
     nid = elem["id"]
     ndesc = elem["tag"].get("cuisine")
-    dbcon.execute('insert into AMENITIES (NODE_ID, TYPE, DESCRIPTION) VALUES (?, ?, ?)', (nid, ntype, ndesc))
+    dbcon.execute('insert or ignore into AMENITIES (NODE_ID, TYPE, DESCRIPTION) VALUES (?, ?, ?)', (nid, ntype, ndesc))
 
 
 def insert_tourism(dbcon, elem):
     ntype = elem["tag"].get("tourism")
     nid = elem["id"]
     ndesc = elem["tag"].get("artwork_type")
-    dbcon.execute('insert into TOURISM (NODE_ID, TYPE, DESCRIPTION) VALUES (?, ?, ?)', (nid, ntype, ndesc))
+    dbcon.execute('insert or ignore into TOURISM (NODE_ID, TYPE, DESCRIPTION) VALUES (?, ?, ?)', (nid, ntype, ndesc))
 
 def insert_shop(dbcon, elem):
     ntype = elem["tag"].get("shop")
     nid = elem["id"]
-    dbcon.execute('insert into SHOPS (NODE_ID, TYPE) VALUES (?, ?)', (nid, ntype))
+    dbcon.execute('insert or ignore into SHOPS (NODE_ID, TYPE) VALUES (?, ?)', (nid, ntype))
+
+
+def ignore_node(elem):
+    lon = elem["data"].get("lon")
+    lat = elem["data"].get("lat")
+    name = elem["data"]["tags"].get("name")
+
+    return lon is None or lat is None or name is None
+
+def construct_missing_coordinates(data):
+    coord_index = {}
+    for elem in data:
+        if elem["type"] == "node":
+            coord_index[elem["id"]] = (elem["lon"], elem["lat"])
+
+    for elem in data:
+        if elem["type"] == "node":
+            continue
+
+        if "nodes" not in elem:
+            continue
+
+        if "lon" not in elem or "lat" not in elem:
+            way_node = None
+            for n in elem["nodes"]:
+                if n in coord_index:
+                    way_node = n
+
+            if way_node is None:
+                print(f'way with tags {elem["tags"]} has no known coordinates.')
+                api = OsmApi()
+                api_node = api.NodeGet(elem["nodes"][0])
+                way_node = api_node["id"]
+                coord_index[way_node] = (api_node["lon"], api_node["lat"])
+
+            elem["lon"] = coord_index[way_node][0]
+            elem["lat"] = coord_index[way_node][1]
 

@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.cluster import DBSCAN
 
 EXCLUDE_TAGS_SQL_STRING = "('vending_machine', 'bicycle_parking')"
-DEBUG = False
+DEBUG = True
 
 class ColdStartRecommender(Recommender):
 
@@ -38,7 +38,7 @@ class ColdStartRecommender(Recommender):
         # we have to solve a optimization problem as follows:
         # find parameters which maximize clusters while minimizing noise for regions of high
         # centrality.
-        db = DBSCAN(eps=0.001, min_samples=3).fit(np.asarray(list(coordinates.keys())))
+        db = DBSCAN(eps=0.0015, min_samples=3).fit(np.asarray(list(coordinates.keys())))
 
         labels = db.labels_
         print(f'DBSCAN found {len(set(labels))} clusters.')
