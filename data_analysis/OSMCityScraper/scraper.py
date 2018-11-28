@@ -103,9 +103,10 @@ def check_and_migrate_schema(conn):
     create table if not exists TAGS
     (
       NODE_ID integer,
+      KEY text,
       TAG text,
       FOREIGN KEY(NODE_ID) REFERENCES NODES(NODE_ID),
-      PRIMARY KEY(NODE_ID, TAG)
+      PRIMARY KEY(NODE_ID, KEY, TAG)
     )
     ''')
 
@@ -142,11 +143,9 @@ def fetch_poi_osmnx(city):
     # download pois using osmapi since osmnx data is not completely/weirdly tagged. Some
     # very important places miss lon/lat specifications. For this, use the bounding box of
     # the obtained polytope and recursively download all data using OsmApi.
+    # NOTE: This might take ages - might be a good idea to scrape a list of cities over night.
     elems = recurse_osmapi(*bounding_box)
-    # rawdata = osmnx.osm_poi_download(poly, amenities=all_amenities)
 
-    #return rawdata['elements']
-    print(elems)
     return elems
 
 def recurse_osmapi(minx, miny, maxx, maxy):
@@ -207,7 +206,7 @@ def write_data_to_db(dbcon, data, city):
         if "shop" in elem["tag"]:
             insert_shop(dbcon, elem)
 
-        # insert_tags(dbcon, elem)
+        insert_tags(dbcon, elem)
 
 
 def insert_node(con, elem, city):
@@ -243,6 +242,12 @@ def insert_shop(dbcon, elem):
     ntype = elem["tag"].get("shop")
     nid = elem["id"]
     dbcon.execute('insert or ignore into SHOPS (NODE_ID, TYPE) VALUES (?, ?)', (nid, ntype))
+
+def insert_tags(dbcon, elem):
+    tags = elem["tag"]
+    nid = elem["id"]
+    for key, tag in tags.items():
+        dbcon.execute('insert or ignore into TAGS (NODE_ID, KEY, TAG) VALUES (?, ?, ?)', (nid, key, tag))
 
 
 def ignore_node(elem):
