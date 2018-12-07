@@ -1,0 +1,41 @@
+\documentclass{beamer}
+
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{url}
+
+\usepackage{mtheme/beamerthememetropolis}           % Use metropolis theme
+\title{Recommending City Tours}
+\date{\today}
+\author{Ajša Terko, Jasmina Bajramović, Johannes Neuhaus}
+\institute{\url{https://github.com/zonradkuse/city-tour-recsys}}
+\begin{document}
+  \maketitle
+  \section{The Problem}
+  \begin{frame}{First Frame}
+    Hello, world!
+  \end{frame}
+  \section{Methods}
+  \begin{frame}{Finding City Quaters}
+    Hello, world!
+  \end{frame}
+  \begin{frame}{Constraint Satisfaction - Finding Paths}
+    \begin{alignat*}{2}
+      & \text{max} & & \sum_{j=1}^{m} w_{j}x_{j} \\
+       & \text{s.t.}& \quad & \sum_{\mathclap{{j:e_{i} \in S_{j}}}}\begin{aligned}[t]
+                        x_{j} & \geq 1,& i & =1, \dots, n\\[3ex]
+                      x_{j} & \in \{0,1\}, & \quad j &=1 ,\dots, m
+                    \end{aligned}
+    \end{alignat*}
+  \end{frame}
+  \begin{frame}{Constraint Satisfaction - Additional constraints}
+    Hello, world!
+  \end{frame}
+  \section{Evaluation}
+  \begin{frame}{How?}
+    Hello, world!
+  \end{frame}
+  \begin{frame}{First Frame}
+    Hello, world!
+  \end{frame}
+
+\end{document}
