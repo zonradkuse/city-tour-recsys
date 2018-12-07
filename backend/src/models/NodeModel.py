@@ -23,6 +23,11 @@ class NodeModel(db.Model):
     description=db.Column(db.Text,nullable=True)
     phone=db.Column(db.String(255),nullable=True)
     email=db.Column(db.String(500),nullable=True)
+
+    wordcount = db.Column(db.Integer,nullable=True)
+    pageviews = db.Column(db.Integer,nullable=True)
+    googlesearch = db.Column(db.Integer, nullable=True)
+
     amenities=db.relationship('AmenityModel',backref='users',lazy=True)
     tourism=db.relationship('TourismModel',backref='users',lazy=True)
     shops=db.relationship('ShopswModel',backref='users',lazy=True)
@@ -40,6 +45,9 @@ class NodeModel(db.Model):
         self.description=data.get('description')
         self.phone=data.get('phone')
         self.email=data.get('email')
+        self.wordcount = data.get('wordcount')
+        self.pageviews = data.get('pageviews')
+        self.googlesearch = data.get('googlesearch')
 
     def save(self):
         db.session.add(self)
@@ -76,6 +84,9 @@ class NodeSchema(Schema):
     description = fields.Str(required=True)
     phone = fields.Str(required=True)
     email = fields.Str(required=True)
+    wordcount = fields.Int(required=True)
+    pageviews = fields.Int(required=True)
+    googlesearch = fields.Int(required=True)
     amenities = fields.Nested(AmenitySchema, many=True)
     tourism = fields.Nested(TourismSchema, many=True)
     shops = fields.Nested(ShopSchema, many=True)
