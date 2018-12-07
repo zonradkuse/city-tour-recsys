@@ -27,7 +27,8 @@ def wordcount(node):
 
 
     if similar(DATA['query']['search'][0]['title'].lower(),node.lower())>=0.6:
-        print(DATA['query']['search'][0]['wordcount'])
+        return DATA['query']['search'][0]['wordcount']
+
 
 if __name__ == '__main__':
     args = sys.argv[1:]
@@ -35,4 +36,5 @@ if __name__ == '__main__':
     for items in args:
         search_word = search_word + str(items) + " "
     search_word=search_word[:-1]
-    wordcount(search_word)
+    num_of_results = wordcount(search_word)
+    print "Wiki - Wordcount: ", num_of_results

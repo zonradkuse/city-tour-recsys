@@ -19,7 +19,7 @@ def googleserch(node):
         print("No results for the query")
         return
 
-    print "Number of google search results for the node: ", num_of_results
+    return num_of_results
 
 if __name__ == '__main__':
     args = sys.argv[1:]
@@ -27,4 +27,5 @@ if __name__ == '__main__':
     for items in args:
         search_word = search_word + str(items) + " "
     search_word=search_word[:-1]
-    googleserch(search_word)
+    num = googleserch(search_word)
+    print "Number of google search results for the node: ", num

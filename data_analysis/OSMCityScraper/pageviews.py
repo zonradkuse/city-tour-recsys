@@ -48,7 +48,8 @@ def pageviews(node):
 
                 number_of_views = number_of_views + views_per_item
 
-            print("Number of views (2001.-2017.): "+ str(number_of_views))
+            return number_of_views
+        return
 
 if __name__ == '__main__':
     args = sys.argv[1:]
@@ -56,4 +57,5 @@ if __name__ == '__main__':
     for items in args:
         search_word = search_word + str(items) + "_"
     search_word=search_word[:-1]
-    pageviews(search_word)
+    number_of_views = pageviews(search_word)
+    print "Number of views (2001.-2017.): ", number_of_views
