@@ -20,9 +20,10 @@ def dispatch(args):
     conn.row_factory = sqlite3.Row
 
     connection_provider.set(conn)
+    connection_provider.set_db_path(args.sqlite_db)
     user_management.initialize(conn)
 
-    if args.bounding_box is not None or not has_city_data(args.city):
+    if args.bounding_box is not None or args.city is not None and not has_city_data(args.city):
         print(f'Scraping data from OSM for box {args.bounding_box}')
         OSMScraper.scrape(conn, args.bounding_box, args.city)
 
@@ -30,12 +31,15 @@ def dispatch(args):
         assert(args.city is not None)
 
         # we will need this to plot a city map, move this code later on to frontend
-
         tour = recommender_core.recommend(args.user, args.city)
-        print(tour.degree())
 
         if args.render_map:
             plot_tour(tour, args.city)
+
+    if args.run_api_server:
+        from frontend.api import app
+
+        app.run(debug=True)
 
 def has_city_data(city):
     try:
@@ -107,7 +111,7 @@ if __name__ == "__main__":
             help='Path to SQLite Database to hold the data. Creates the database if not existing and writes into the database if specified.')
     parser.add_argument('--user', type=str, help="Specify a user to give recommendations for.")
     parser.add_argument('--city', type=str, help="Specify a city to give recommendations for.")
-    parser.add_argument('--render-map', type=bool, help="Indicator whether to render a map or not.")
+    parser.add_argument('--run-api-server', type=bool, help="Indicator whether to run the API Server.")
 
     args = parser.parse_args()
 

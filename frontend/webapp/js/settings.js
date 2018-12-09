@@ -1,3 +1,3 @@
 module.exports = {
-    API_SERVER : "https://entenhausen.io:8777"
+    API_SERVER : "http://127.0.0.1:5000/api/v1"
 }

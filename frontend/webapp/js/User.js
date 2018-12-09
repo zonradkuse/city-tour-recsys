@@ -1,5 +1,5 @@
 let User = {
-    current : { username : "anonymous_user"}
+    current : {}
 }
 
 module.exports = User;
