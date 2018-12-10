@@ -1,2 +1,11 @@
 pip install pipenv
 pipenv install flask flask-sqlalchemy psycopg2 flask-migrate flask-script marshmallow flask-bcrypt pyjwt
+
+//starting pipenv shell
+pipenv shell
+
+//database migrations
+python manage.py db migrate
+python manage.py db upgrade
+
+python3 run.py
