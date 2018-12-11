@@ -1,4 +1,5 @@
 from frontend.api.App import app
+import osmnx
 import recommender_core
 
 import json
