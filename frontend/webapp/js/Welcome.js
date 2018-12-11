@@ -4,7 +4,7 @@ let Welcome = {
     view : function () {
         contBtn = m('button.btn.btn-default', {
             onclick: function () {
-                m.route.set('/search')
+                m.route.set('/list')
             }
         } , 'Continue to Search')
         let renderButton = User.current.username != undefined && User.current.username != ''

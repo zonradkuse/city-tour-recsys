@@ -6,6 +6,7 @@ let User = require('./User.js')
 
 let Tour = {
     nodes : [],
+    edges : [],
 
     retrieveTours : function (vnode) {
         return m.request({
@@ -13,7 +14,15 @@ let Tour = {
             url: settings.API_SERVER + '/recommendation/' + User.current.username + '/' + vnode.attrs.city
         })
         .then(function(result) {
-            Tour.nodes = result
+            Tour.nodes = []
+            Tour.edges = result
+            for (var i = 0; i < Tour.edges.length; i++) {
+                if (!Tour.nodes.includes(Tour.edges[i][0])) Tour.nodes.push(Tour.edges[i][0])
+                if (!Tour.nodes.includes(Tour.edges[i][1])) Tour.nodes.push(Tour.edges[i][1])
+            }
+
+            console.log(Tour.nodes)
+
         })
     },
 
