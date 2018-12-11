@@ -2,7 +2,7 @@
 from z3 import *
 import networkx as nx
 
-_DEBUG = False
+_DEBUG = True
 
 class Tour(nx.Graph):
 
@@ -43,6 +43,10 @@ class TourSolver():
     def solve(self):
         self._build_ip()
         # important! first check, otherwise we segfault
+        if _DEBUG:
+            print("checking formula for solution")
+            print(self._solver)
+
         sat_result = self._solver.check()
 
         if _DEBUG:

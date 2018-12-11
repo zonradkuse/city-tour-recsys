@@ -1,5 +1,6 @@
 from recommender_core.Recommender import Recommender
 from recommender_core.Tour import TourSolver
+import connection_provider
 
 import numpy as np
 from sklearn.cluster import DBSCAN
@@ -69,7 +70,8 @@ class ColdStartRecommender(Recommender):
 
     def query_city_data(self, city_name):
         # create sql query for this
-        c = self.conn.cursor()
+        conn = connection_provider.get_fresh_with_row()
+        c = conn.cursor()
 
         resultset = []
 
