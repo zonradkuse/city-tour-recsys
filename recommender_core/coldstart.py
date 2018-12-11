@@ -11,7 +11,16 @@ DEBUG = True
 class ColdStartRecommender(Recommender):
 
     def recommend(self, city, user):
-        return self.coldstart_recommendations(city)
+        recom=self.coldstart_recommendations(city)
+        result = []
+
+        # tuples of names and coordinates
+        for origin, dest in recom.edges():
+            or_values = (origin["NODE_ID"], origin["NAME"], origin["LON"], origin["LAT"])
+            des_values = (dest["NODE_ID"], dest["NAME"], dest["LON"], dest["LAT"])
+            result.append((or_values, des_values))
+
+        return result
 
 
     def coldstart_recommendations(self, city):
@@ -142,4 +151,3 @@ class ColdStartRecommender(Recommender):
                     attractions.append(item)
 
         return attractions
-
