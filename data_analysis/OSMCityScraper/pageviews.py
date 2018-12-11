@@ -58,4 +58,4 @@ if __name__ == '__main__':
         search_word = search_word + str(items) + "_"
     search_word=search_word[:-1]
     number_of_views = pageviews(search_word)
-    print "Number of views (2001.-2017.): ", number_of_views
+    print ("Number of views (2001.-2017.): ", number_of_views)

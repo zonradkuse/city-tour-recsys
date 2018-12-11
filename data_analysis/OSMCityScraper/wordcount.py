@@ -37,4 +37,4 @@ if __name__ == '__main__':
         search_word = search_word + str(items) + " "
     search_word=search_word[:-1]
     num_of_results = wordcount(search_word)
-    print "Wiki - Wordcount: ", num_of_results
+    print ("Wiki - Wordcount: ", num_of_results)

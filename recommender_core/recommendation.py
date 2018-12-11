@@ -17,10 +17,10 @@ def recommend(user, city):
 def choose_user_recommendation(user):
     conn = connection_provider.get_fresh()
     cursor = conn.cursor()
-    print(user)
+
     cursor.execute("select REVIEW_ID FROM REVIEWS WHERE USER='{}'".format(user))
     result = cursor.fetchone()
-    print(result)
+    
     conn.close()
 
     if result == None:

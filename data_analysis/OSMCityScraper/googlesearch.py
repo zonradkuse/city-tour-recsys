@@ -2,7 +2,7 @@ import requests
 import sys
 import json
 
-def googleserch(node):
+def googlesearch(node):
     session = requests.Session()
 
     URL = "https://serpapi.com/search.json?q="+node+"&hl=en&gl=us"
@@ -27,5 +27,5 @@ if __name__ == '__main__':
     for items in args:
         search_word = search_word + str(items) + " "
     search_word=search_word[:-1]
-    num = googleserch(search_word)
-    print "Number of google search results for the node: ", num
+    num = googlesearch(search_word)
+    print ("Number of google search results for the node: ", num)

@@ -1,4 +1,9 @@
 from recommender_core.Recommender import Recommender
+from data_analysis.OSMCityScraper import wordcount
+from data_analysis.OSMCityScraper import pageviews
+from data_analysis.OSMCityScraper import googlesearch
+
+from operator import itemgetter
 import connection_provider
 
 import numpy as np
@@ -14,12 +19,12 @@ class UserRecommender(Recommender):
 
         newnodes = self.get_newnodes_based_on_tags(liked_tags,liked_nodes)
 
-
-        result=[]
+        list_of_nodes=[]
         for i in range(len(newnodes)):
-            result.append(newnodes[i][0])
+            list_of_nodes.append(newnodes[i][0])
 
-        
+        result=self.get_quality_measures(list_of_nodes)
+
         return result
 
     def get_liked_nodes(self,user):
@@ -68,3 +73,61 @@ class UserRecommender(Recommender):
 
         conn.close()
         return result
+
+    def get_quality_measures(self,in_nodes):
+        conn = connection_provider.get_fresh_with_row()
+        cursor = conn.cursor()
+
+        nodes=""
+        for i in range(len(in_nodes)):
+            nodes=nodes+str(in_nodes[i])+", "
+        nodes=nodes[:-2]
+
+        cursor.execute("select NODE_ID,NAME from NODES where NODE_ID IN ({})".format(nodes))
+        result = cursor.fetchall()
+
+        node_names=[]
+        for i in range(len(result)):
+            node_names.append([result[i]["NODE_ID"],result[i]["NAME"]])
+
+        wordcount_res=[]
+        pageviews_res=[]
+        googlesearch_res=[]
+
+        for node in node_names:
+            out = wordcount.wordcount(node[1])
+            if (out != None):
+                wordcount_res.append([node[0],out])
+            out = pageviews.pageviews(node[1])
+            if (out != None):
+                pageviews_res.append([node[0],out])
+            out = googlesearch.googlesearch(node[1])
+            if (out != None):
+                googlesearch_res.append([node[0],out])
+
+        wordcount_res.sort(key=itemgetter(1),reverse=True)
+        pageviews_res.sort(key=itemgetter(1),reverse=True)
+        googlesearch_res.sort(key=itemgetter(1),reverse=True)
+
+        final_nodes=[]
+        count=0
+
+        for x in range(0,10):
+            if (x < len(wordcount_res) and (wordcount_res[i][0] in final_nodes)==False):
+                final_nodes.append(wordcount_res[i][0])
+                count=count+1
+            if (count==10):
+                break
+            if (x < len(pageviews_res) and (pageviews_res[i][0] in final_nodes)==False):
+                final_nodes.append(pageviews_res[i][0])
+                count=count+1
+            if (count==10):
+                break
+            if (x < len(googlesearch_res) and (googlesearch_res[i][0] in final_nodes)==False):
+                final_nodes.append(googlesearch_res[i][0])
+                count=count+1
+            if (count==10):
+                break
+
+
+        return final_nodes
