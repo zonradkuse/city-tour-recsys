@@ -122,6 +122,17 @@ def check_and_migrate_schema(conn):
     )
     ''')
 
+    conn.execute('''
+    alter table NODES add column pageviews integer;
+    ''')
+
+    conn.execute('''
+    alter table NODES add column googlesearch integer;
+    ''')
+
+    conn.execute('''
+    alter table NODES add column wordcount integer;
+    ''')
 
     # if you ever change anything in the schema, check here whether your desired change
     # is already applied and if not apply the change without dropping data!!
@@ -285,4 +296,3 @@ def construct_missing_coordinates(data):
 
             elem["lon"] = coord_index[way_node][0]
             elem["lat"] = coord_index[way_node][1]
-
