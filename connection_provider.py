@@ -27,6 +27,11 @@ def get_fresh():
     # fconn.row_factory = dict_factory
     return fconn
 
+def get_fresh_with_row():
+    fconn = sqlite3.connect(dbpath)
+    fconn.row_factory = sqlite3.Row
+    return fconn
+
 def get_cursor():
     assert(conn is not None)
     return conn.cursor()

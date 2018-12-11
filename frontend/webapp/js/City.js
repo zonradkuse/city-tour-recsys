@@ -10,9 +10,7 @@ let City = {
             url: settings.API_SERVER + "/search/" + query,
         })
         .then(function(result) {
-            console.log(City.searchResult)
             City.searchResult = result
-            console.log(City.searchResult)
         })
     },
 

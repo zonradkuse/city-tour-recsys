@@ -6,6 +6,7 @@ let CitySearch = require('./CitySearch.js')
 let Evaluator = require('./Evaluate.js')
 let Welcome = require('./Welcome.js')
 let City = require('./City.js')
+let TourList = require('./TourList.js')
 
 m.route(document.body, "/" ,{
     "/" : {
@@ -20,15 +21,12 @@ m.route(document.body, "/" ,{
             cities : City.allCities
         })) }
     },
-    "/tour/:user/:city" : {
-        render : function () { return m(Layout, m("h2", "The Tour")) }
+    "/tour/:city" : {
+        render : function (vnode) { return m(Layout, m(TourList, { ...vnode.attrs })) }
     },
     "/evaluate/:city" : {
         render : function (vnode) { return m(Layout, m(Evaluator, {
-            ...vnode.attrs,
-            items : [
-                {name : "Test", id : "test" },
-                {name : "Test1", id : "test1" }
-            ]})) }
+            ...vnode.attrs
+            })) }
     }
 })
