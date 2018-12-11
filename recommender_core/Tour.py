@@ -2,7 +2,7 @@
 from z3 import *
 import networkx as nx
 
-_DEBUG = True
+_DEBUG = False
 
 class Tour(nx.Graph):
 

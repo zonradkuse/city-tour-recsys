@@ -39,7 +39,7 @@ class ColdStartRecommender(Recommender):
         # we have to solve a optimization problem as follows:
         # find parameters which maximize clusters while minimizing noise for regions of high
         # centrality.
-        db = DBSCAN(eps=0.0015, min_samples=3).fit(np.asarray(list(coordinates.keys())))
+        db = DBSCAN(eps=0.003, min_samples=5).fit(np.asarray(list(coordinates.keys())))
 
         labels = db.labels_
         print(f'DBSCAN found {len(set(labels))} clusters.')
@@ -59,6 +59,9 @@ class ColdStartRecommender(Recommender):
 
         solver = TourSolver()
         for atr in attractions:
+            if len(solver.pois) == 15:
+                break
+
             solver.add_poi(atr)
 
         tour = solver.solve()

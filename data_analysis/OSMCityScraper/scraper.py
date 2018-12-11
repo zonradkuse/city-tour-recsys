@@ -25,9 +25,8 @@ def scrape(dbcon, bounding_box, city):
     city_data = None
 
     if bounding_box is not None:
-        assert(false) # deprecated
         print(f'Fetching data for coordinates {bounding_box} using OsmApi.')
-        city_data = api.Map(*bounding_box)
+        city_data = recurse_osmapi(*bounding_box)
         print(f'OSM gave us {len(city_data)} entries.')
     elif city is not None:
         print(f'Fetching data for {city} using osmnx.')
@@ -196,11 +195,15 @@ def recurse_osmapi(minx, miny, maxx, maxy):
 
 def analyze_data(data):
     relevant_nodes = []
+    relevant_ids = []
     for elem in data:
+
         # we require the nodes to have at least one tag and a name or being amenity
         # we assume that tourist tags have names. Otherwise they are most likely useless.
         if elem["type"] == "node" and len(elem["data"]["tag"].keys()) > 0 and ("name" in elem["data"]["tag"] or "amenity" in elem["data"]["tag"]):
-            relevant_nodes.append(elem["data"])
+            if elem["data"]["id"] not in relevant_ids:
+                relevant_ids.append(elem["data"]["id"])
+                relevant_nodes.append(elem["data"])
 
     return relevant_nodes
 
@@ -232,7 +235,7 @@ def insert_node(con, elem, city):
     email = elem["tag"].get("email")
 
     con.execute('''
-    insert OR IGNORE into NODES (NAME, NODE_ID, IMAGE_LINK, WEBSITE, LON, LAT, DESCRIPTION, PHONE, EMAIL, CITY)
+    insert or replace into NODES (NAME, NODE_ID, IMAGE_LINK, WEBSITE, LON, LAT, DESCRIPTION, PHONE, EMAIL, CITY)
        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (name, nid, image_link, website, lon, lat, descr, phone, email, city))
 
