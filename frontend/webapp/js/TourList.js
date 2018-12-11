@@ -12,10 +12,15 @@ let TourList = {
     oninit : Tour.retrieveTours,
 
     view : function (vnode) {
-        console.log(Tour.nodes)
+        if (Tour.nodes.length == 0) {
+            return m("div", [
+                m("h1", "Ooops!"),
+                m("p", "We could not find a Tour through the city")
+            ])
+        }
 
         return m(".row", [
-            m(".col", m(Evaluator, {...vnode.attrs, nodes : Tour.nodes})),
+            m(".col", m(Evaluator, {city: vnode.attrs.city, nodes : Tour.nodes})),
             //m("a", { href : '/evaluate/' + vnode.attrs.city, items: Tour.nodes, oncreate: m.route.link }, "Go to Evaluation"),
             m(".col", m(Map, { nodes : Tour.nodes }))
         ])
