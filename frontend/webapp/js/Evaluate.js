@@ -12,25 +12,25 @@ let Evaluator = {
         return function () {
             return m.request({
                 method: "PUT",
-                url: settings.API_SERVER + "/review/" + item.id,
+                url: settings.API_SERVER + "/review/" + item[0],
                 data : {
                     username : User.current.username,
                     review : positive
                 }
             })
             .then(function(result) {
-                Evaluator.evaluated.append(item)
+                Evaluator.evaluated.push(item)
                 City.searchResult = result
             })
         }
     },
 
     view : function (vnode) {
+        console.log(Tour.nodes)
         return m('div', [
             m('h1', 'Hi! You are evaluating ' + vnode.attrs.city + '.'),
             m("table.table.table-striped", Tour.nodes.map(function(item) {
                 let evaluated = Evaluator.evaluated.includes(item)
-                console.log(item)
 
                 return m("tr", [
                     m("td", item[0]),

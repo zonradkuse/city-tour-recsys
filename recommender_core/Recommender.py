@@ -2,9 +2,9 @@ import connection_provider as cp
 
 class Recommender:
 
-    def __init__(self, dbconn, constraints):
+    def __init__(self, dbconn, max_dist):
         self.conn = dbconn
-        self.constraints = constraints
+        self.max_dist = max_dist
 
 
     # Abstract Method responsible for recommendation.

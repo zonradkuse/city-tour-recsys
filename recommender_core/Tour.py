@@ -1,6 +1,7 @@
 # use z3 in order to find good tours
 from z3 import *
 import networkx as nx
+import recommender_core.misc as misc
 
 _DEBUG = False
 
@@ -21,6 +22,7 @@ class TourSolver():
         self._solver = Optimize()
         self._poi_variables = {}
         self._order_variables = {}
+        self.max_length = None
 
     def add_poi(self, poi):
         self.pois[poi["NODE_ID"]] = poi
@@ -31,8 +33,14 @@ class TourSolver():
 
     # Input: length in km
     def restrict_tour_length(self, length):
-        # the sum of all parts of the tour must be less than length
-        assert(false) # not implemented
+        self.max_length = length
+
+    def add_tour_length_constraint(self):
+        length = self.max_length
+        self._solver.add(sum([self.distance(origin_id, dest_id) * self._order_variables[origin_id, dest_id] if origin_id != dest_id else 0 for origin_id in self.pois.keys() for dest_id in self.pois.keys()]) <= length)
+
+    def distance(self, from_id, to_id):
+        return misc.distance((self.pois[from_id]["LAT"], self.pois[from_id]["LON"]), (self.pois[to_id]["LAT"], self.pois[to_id]["LON"]))
 
     def make_poi_mandatory(self, poi_id):
         assert(false)
@@ -42,6 +50,9 @@ class TourSolver():
 
     def solve(self):
         self._build_ip()
+        if self.max_length is not None:
+            self.add_tour_length_constraint()
+
         # important! first check, otherwise we segfault
         if _DEBUG:
             print("checking formula for solution")

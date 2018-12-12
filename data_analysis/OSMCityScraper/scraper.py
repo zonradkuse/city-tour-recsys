@@ -121,17 +121,18 @@ def check_and_migrate_schema(conn):
     )
     ''')
 
-    conn.execute('''
-    alter table NODES add column pageviews integer;
-    ''')
+    # TODO should be only done once
+    #conn.execute('''
+    #alter table NODES add column pageviews integer;
+    #''')
 
-    conn.execute('''
-    alter table NODES add column googlesearch integer;
-    ''')
+    #conn.execute('''
+    #alter table NODES add column googlesearch integer;
+    #''')
 
-    conn.execute('''
-    alter table NODES add column wordcount integer;
-    ''')
+    #conn.execute('''
+    #alter table NODES add column wordcount integer;
+    #''')
 
     # if you ever change anything in the schema, check here whether your desired change
     # is already applied and if not apply the change without dropping data!!

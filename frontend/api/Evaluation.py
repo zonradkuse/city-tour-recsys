@@ -14,8 +14,9 @@ def evaluate(nodeid):
 
     conn = connection_provider.get_fresh()
     cursor = conn.cursor()
-    cursor.execute("insert into REVIEWS(NODE_ID,USER,REVIEW_VALUE) VALUES (?,?,?)",(nodeid,user,value));
+    # replace since this is put - we could change our mind.
+    cursor.execute("insert or replace into REVIEWS(NODE_ID,USER,REVIEW_VALUE) VALUES (?,?,?)",(nodeid,user,value));
     conn.commit()
     conn.close()
 
-    return 'OK'
+    return json.dumps({})

@@ -11,17 +11,7 @@ DEBUG = True
 class ColdStartRecommender(Recommender):
 
     def recommend(self, city, user):
-        recom=self.coldstart_recommendations(city)
-        result = []
-
-        # tuples of names and coordinates
-        for origin, dest in recom.edges():
-            or_values = (origin["NODE_ID"], origin["NAME"], origin["LON"], origin["LAT"])
-            des_values = (dest["NODE_ID"], dest["NAME"], dest["LON"], dest["LAT"])
-            result.append((or_values, des_values))
-
-        return result
-
+        return self.coldstart_recommendations(city)
 
     def coldstart_recommendations(self, city):
         # We want to find a good coldstart without requiring any user data.
@@ -72,6 +62,10 @@ class ColdStartRecommender(Recommender):
                 break
 
             solver.add_poi(atr)
+
+        if self.max_dist is not None:
+            print(f'Restricting tour length to {self.max_dist}km.')
+            solver.restrict_tour_length(self.max_dist)
 
         tour = solver.solve()
 

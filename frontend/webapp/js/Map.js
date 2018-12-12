@@ -11,15 +11,16 @@ var Map = {
             'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
             id: 'mapbox.streets'
         }).addTo(Map.map);
-    },
 
-    view : function () {
         Tour.nodes.forEach(function(item) {
             Map.map.setView([Tour.nodes[0][3], Tour.nodes[0][2]], 11);
             coords = [item[3], item[2]]
             var marker = L.marker(coords).addTo(Map.map)
             marker.bindPopup(item[1]).openPopup();
         })
+    },
+
+    view : function () {
         return m(".map", {id : "_map"})
     }
 };

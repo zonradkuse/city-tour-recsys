@@ -130,4 +130,8 @@ class UserRecommender(Recommender):
                 break
 
 
+        # TODO Please do not break the API - the idea is to return tours. You can even use the Toursolver to do so.
+        # Moving the transformation of the frontend to the coldstart just because it does not fit your code
+        # causes the webapp to be inable to distinguish between between der recommendation types. We would
+        # have to introduce separate handling for different return types. This is really bad.
         return final_nodes
