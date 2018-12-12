@@ -2,17 +2,20 @@ import connection_provider
 import recommender_core.coldstart as coldstart
 import recommender_core.userrecommender as userrecommender
 from recommender_core.Recommender import initialize_recommender
+import recommender_core.TagBasedRecommender as TagBasedRecommender
 
 def recommend(user, city, max_dist = None):
     recommenders = {}
     recommenders["user"] = initialize_recommender(userrecommender.UserRecommender)
     recommenders["cold"] = initialize_recommender(coldstart.ColdStartRecommender)
+    recommenders["tag"] = initialize_recommender(TagBasedRecommender.TagBasedRecommender)
+    recommenders["tag"].use_dice_coeff()
 
     for key, rec in recommenders.items():
         rec.max_dist = max_dist
 
     if (choose_user_recommendation(user)):
-        user_recommender = recommenders["user"]
+        user_recommender = recommenders["tag"]
         return user_recommender.recommend(city, user)
     else:
         coldstart_recommender = recommenders["cold"]
