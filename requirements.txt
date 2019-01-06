@@ -1,5 +1,6 @@
 attrs==18.2.0
 boto==2.49.0
+branca==0.3.1
 certifi==2018.10.15
 chardet==3.0.4
 Click==7.0
@@ -9,11 +10,16 @@ cycler==0.10.0
 decorator==4.3.0
 descartes==1.1.0
 Fiona==1.8.0
+Flask==1.0.2
+Flask-Cors==3.0.7
 geographiclib==1.49
 geopandas==0.4.0
 geopy==1.17.0
 idna==2.7
+itsdangerous==1.1.0
+Jinja2==2.10
 kiwisolver==1.0.1
+MarkupSafe==1.1.0
 matplotlib==3.0.2
 munch==2.3.2
 networkx==2.2
@@ -32,4 +38,5 @@ scipy==1.1.0
 Shapely==1.6.4.post2
 six==1.11.0
 urllib3==1.23
+Werkzeug==0.14.1
 z3-solver==4.8.0.0.post1
