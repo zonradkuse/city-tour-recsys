@@ -1,5 +1,6 @@
 from recommender_core.Recommender import Recommender
 from recommender_core.Tour import TourSolver
+import math
 
 import connection_provider
 
@@ -33,16 +34,18 @@ class TagBasedRecommender(Recommender):
             nodeid = poi["NODE_ID"]
             confidences.append((self.coefficient_method(poi_tags[nodeid], user_tags), pois_by_id[nodeid]))
 
+        confidences = self.diversify(confidences)
+
         solver = TourSolver()
         # sort the vector descending
         # add 15 most important items to solver
         for confidence, poi in sorted(confidences, key = lambda item: item[0], reverse = True):
-            if len(solver.pois) == 15:
+            if len(solver.pois) == 20:
                 break
 
             solver.add_poi(poi)
 
-        if self.max_dist is not None:
+        if self.max_dist is not None and str(self.max_dist) != "":
             print(f'Restricting tour length to {self.max_dist}km.')
             solver.restrict_tour_length(self.max_dist)
 
@@ -50,16 +53,30 @@ class TagBasedRecommender(Recommender):
         return solver.solve()
 
     def jaccard(self, set_a, set_b):
+        if len(set_a.union(set_b)) == 0:
+            return 0
+
         return len(set_a.intersection(set_b))/len(set_a.union(set_b))
 
     def dice(self, set_a, set_b):
+        if len(set_a.union(set_b)) == 0:
+            return 0
+
         return 2*len(set_a.intersection(set_b))/(len(set_a) + len(set_b))
+
+    def diversify(self, confidences):
+        result = []
+        for _conf, _id in confidences:
+            conf = 2/3 * (math.exp(-((_conf-0.5)**2)/0.1) * _conf)
+            result.append((conf,_id))
+
+        return result
 
     def get_liked_tags(self,user):
         conn = connection_provider.get_fresh_with_row()
         cursor = conn.cursor()
 
-        cursor.execute("select t.TAG as TAG FROM REVIEWS as r,NODES as n,TAGS as t WHERE n.NODE_ID=r.NODE_ID AND t.NODE_ID=r.NODE_ID AND r.USER='{}' group by TAG COLLATE NOCASE".format(user))
+        cursor.execute('select t.TAG as TAG FROM REVIEWS as r,NODES as n,TAGS as t WHERE n.NODE_ID=r.NODE_ID AND t.NODE_ID=r.NODE_ID AND r.USER="{}" and  KEY in ("amenity", "tourism", "shop") and TAG not in ("hotel", "hostel") group by TAG COLLATE NOCASE'.format(user))
 
         resultset = []
         for row in cursor.fetchall():
@@ -84,7 +101,7 @@ class TagBasedRecommender(Recommender):
         conn = connection_provider.get_fresh_with_row()
         cursor = conn.cursor()
 
-        cursor.execute("select TAG FROM TAGS where NODE_ID = ? COLLATE NOCASE group by TAG", (nodeid,))
+        cursor.execute('select TAG FROM TAGS where NODE_ID = ? and KEY in ("amenity", "tourism", "shop") and TAG not in ("hotel", "hostel") COLLATE NOCASE group by TAG', (nodeid,))
 
         resultset = []
         for row in cursor.fetchall():
